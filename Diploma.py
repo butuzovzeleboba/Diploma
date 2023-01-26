@@ -4,9 +4,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
-from sklearn.metrics import accuracy_score
 import pingouin as pg
 import scipy.stats as stats
+import scipy
+import statsmodels.formula.api as smf
+from scipy.cluster.hierarchy import linkage, dendrogram
 
 # 1)загрузка данных и оисательная статистика
 LSTU_old = pd.read_excel('./LSTU_old.xlsx')
@@ -100,10 +102,80 @@ alpha_LSTU_new = pg.cronbach_alpha(data=standart_LSTU_new, ci=.95)
 print("Альфа Кронбаха ЛГТУ новые", alpha_LSTU_new)
 
 alpha_LSTU_old = pg.cronbach_alpha(data=standart_LSTU_old, ci=.95)
-print("Альфа Кронбаха ЛГТУ старые", alpha_LSTU_old)
+print("Альфа Кронбаха ЛГТУ старые", alpha_LSTU_old)# Посмотреть точнее
 
 alpha_VSU = pg.cronbach_alpha(data=standart_VSU_data, ci=.95)
 print("Альфа Кронбаха ВГУ", alpha_VSU)
+
+#7) Критерий согласия Пирсона
+stat, p = scipy.stats.normaltest(LSTU_old['Престиж'])
+print('Statistics=%.3f, p-value=%.3f' % (stat, p))
+alpha = 0.05
+if p > alpha:
+    print('Принять гипотезу о нормальности по старым данным ЛГТУ')
+else:
+    print('Отклонить гипотезу о нормальности по старым данным ЛГТУ')
+
+tat, p = scipy.stats.normaltest(LSTU_new['Престиж'])
+print('Statistics=%.3f, p-value=%.3f' % (stat, p))
+alpha = 0.044
+if p > alpha:
+    print('Принять гипотезу о нормальности по новым данным ЛГТУ')
+else:
+    print('Отклонить гипотезу о нормальности по новым данным ЛГТУ')# Посмотреть точнее
+
+tat, p = scipy.stats.normaltest(VSU_data['Престиж'])
+print('Statistics=%.3f, p-value=%.3f' % (stat, p))
+alpha = 0.05
+if p > alpha:
+    print('Принять гипотезу о нормальности по данным ВГУ')
+else:
+    print('Отклонить гипотезу о нормальности по данным ВГУ')
+
+# 8)Линейная регрессия
+model = smf.ols('Престиж ~ Востребованность', data=LSTU_old)
+res = model.fit()
+print(res.summary())
+
+model = smf.ols('Престиж ~ Востребованность', data=LSTU_new)
+res = model.fit()
+print(res.summary())
+
+model = smf.ols('Престиж ~ Востребованность', data=VSU_data)
+res = model.fit()
+print(res.summary())
+
+# \\\\\\\\\\\\\\\\\
+# 9)Кластеное дерево
+samples = LSTU_new.values
+varieties1 = list(LSTU_new.pop('Престиж'))
+mergings = linkage(samples, method='complete')
+dendrogram(mergings,
+           labels=varieties1,
+           leaf_rotation=90,
+           leaf_font_size=6,
+           )
+plt.show()
+
+samples = LSTU_old.values
+varieties2 = list(LSTU_old.pop('Престиж'))
+mergings = linkage(samples, method='complete')
+dendrogram(mergings,
+           labels=varieties2,
+           leaf_rotation=90,
+           leaf_font_size=6,
+           )
+plt.show()
+
+samples = VSU_data.values
+varieties3 = list(VSU_data.pop('Престиж'))
+mergings = linkage(samples, method='complete')
+dendrogram(mergings,
+           labels=varieties3,
+           leaf_rotation=90,
+           leaf_font_size=6,
+           )
+plt.show()
 
 # \\\\\\\\\\\\\\\\\
 # # 6)Тест Хи квадрат
@@ -112,8 +184,8 @@ print("Альфа Кронбаха ВГУ", alpha_VSU)
 # print('hi_LSTU_new : ' +
 #       str(hi_LSTU_new))
 # print('p_value : ' + str(p_value))
-# # print(hi_LSTU_new)
-#
+# print(hi_LSTU_new)
+
 # # \\\\\\\\\\\
 # # 4)К-средних
 # X = LSTU_new.values
