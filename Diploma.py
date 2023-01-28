@@ -178,6 +178,27 @@ dendrogram(mergings,
 plt.show()
 
 # \\\\\\\\\\\\\\\\\
+# 10)Свечи
+sns.catplot(x='Престиж',
+            y='Востребованность',
+            kind='box',
+            data=LSTU_old)
+plt.show()
+
+sns.catplot(x='Престиж',
+            y='Востребованность',
+            kind='box',
+            data=LSTU_new)
+plt.show()
+
+sns.catplot(x='Престиж',
+            y='Востребованность',
+            kind='box',
+            data=VSU_data)
+plt.show()
+
+
+# \\\\\\\\\\\\\\\\\
 # # 6)Тест Хи квадрат
 # standart_LSTU_new = standart_LSTU_new.values
 # hi_LSTU_new, p_value = stats.chisquare(f_obs=standart_LSTU_new)
