@@ -60,18 +60,6 @@ linewidth =2, cbar=False)
 plt.show()
 
 # 5)Метод локтя
-X1 = standart_LSTU_new
-wcss1=[]
-for i in range(1, 12):
-    k_means = KMeans(n_clusters=i, init='k-means++', max_iter=100, n_init=8, random_state=12)
-    k_means.fit(X1)
-    wcss1.append(k_means.inertia_)
-plt.plot(range(1, 12), wcss1)
-plt.title('Метод локтя ЛГТУ новые данные')
-plt.xlabel('Количество кластеров')
-plt.ylabel('WCSS')
-plt.show()
-
 X2 = standart_LSTU_old
 wcss2=[]
 for i in range(1, 12):
@@ -80,6 +68,18 @@ for i in range(1, 12):
     wcss2.append(k_means.inertia_)
 plt.plot(range(1, 12), wcss2)
 plt.title('Метод локтя ЛГТУ старые данные')
+plt.xlabel('Количество кластеров')
+plt.ylabel('WCSS')
+plt.show()
+
+X1 = standart_LSTU_new
+wcss1=[]
+for i in range(1, 12):
+    k_means = KMeans(n_clusters=i, init='k-means++', max_iter=100, n_init=8, random_state=12)
+    k_means.fit(X1)
+    wcss1.append(k_means.inertia_)
+plt.plot(range(1, 12), wcss1)
+plt.title('Метод локтя ЛГТУ новые данные')
 plt.xlabel('Количество кластеров')
 plt.ylabel('WCSS')
 plt.show()
@@ -103,11 +103,21 @@ print("Альфа Кронбаха ЛГТУ новые", alpha_LSTU_new)
 
 alpha_LSTU_old = pg.cronbach_alpha(data=standart_LSTU_old, ci=.95)
 print("Альфа Кронбаха ЛГТУ старые", alpha_LSTU_old)# Посмотреть точнее
+x = alpha_LSTU_old.split(",", 1)
+
 
 alpha_VSU = pg.cronbach_alpha(data=standart_VSU_data, ci=.95)
 print("Альфа Кронбаха ВГУ", alpha_VSU)
 
 #7) Критерий согласия Пирсона
+stat, p = scipy.stats.normaltest(LSTU_new['Престиж'])
+print('Statistics=%.3f, p-value=%.3f' % (stat, p))
+alpha = 0.044
+if p > alpha:
+    print('Принять гипотезу о нормальности по новым данным ЛГТУ')
+else:
+    print('Отклонить гипотезу о нормальности по новым данным ЛГТУ')# Посмотреть точнее
+
 stat, p = scipy.stats.normaltest(LSTU_old['Престиж'])
 print('Statistics=%.3f, p-value=%.3f' % (stat, p))
 alpha = 0.05
@@ -116,15 +126,7 @@ if p > alpha:
 else:
     print('Отклонить гипотезу о нормальности по старым данным ЛГТУ')
 
-tat, p = scipy.stats.normaltest(LSTU_new['Престиж'])
-print('Statistics=%.3f, p-value=%.3f' % (stat, p))
-alpha = 0.044
-if p > alpha:
-    print('Принять гипотезу о нормальности по новым данным ЛГТУ')
-else:
-    print('Отклонить гипотезу о нормальности по новым данным ЛГТУ')# Посмотреть точнее
-
-tat, p = scipy.stats.normaltest(VSU_data['Престиж'])
+stat, p = scipy.stats.normaltest(VSU_data['Престиж'])
 print('Statistics=%.3f, p-value=%.3f' % (stat, p))
 alpha = 0.05
 if p > alpha:
@@ -133,11 +135,11 @@ else:
     print('Отклонить гипотезу о нормальности по данным ВГУ')
 
 # 8)Линейная регрессия
-model = smf.ols('Престиж ~ Востребованность', data=LSTU_old)
+model = smf.ols('Престиж ~ Востребованность', data=LSTU_new)
 res = model.fit()
 print(res.summary())
 
-model = smf.ols('Престиж ~ Востребованность', data=LSTU_new)
+model = smf.ols('Престиж ~ Востребованность', data=LSTU_old)
 res = model.fit()
 print(res.summary())
 
@@ -147,8 +149,9 @@ print(res.summary())
 
 # \\\\\\\\\\\\\\\\\
 # 9)Кластеное дерево
-samples = LSTU_new.values
-varieties1 = list(LSTU_new.pop('Престиж'))
+LSTU_new_copy = LSTU_new.copy()
+samples = LSTU_new_copy.values
+varieties1 = list(LSTU_new_copy.pop('Престиж'))
 mergings = linkage(samples, method='complete')
 dendrogram(mergings,
            labels=varieties1,
@@ -157,8 +160,9 @@ dendrogram(mergings,
            )
 plt.show()
 
-samples = LSTU_old.values
-varieties2 = list(LSTU_old.pop('Престиж'))
+LSTU_old_copy = LSTU_old.copy()
+samples = LSTU_old_copy.values
+varieties2 = list(LSTU_old_copy.pop('Престиж'))
 mergings = linkage(samples, method='complete')
 dendrogram(mergings,
            labels=varieties2,
@@ -167,8 +171,9 @@ dendrogram(mergings,
            )
 plt.show()
 
-samples = VSU_data.values
-varieties3 = list(VSU_data.pop('Престиж'))
+VSU_data_copy = VSU_data.copy()
+samples = VSU_data_copy.values
+varieties3 = list(VSU_data_copy.pop('Престиж'))
 mergings = linkage(samples, method='complete')
 dendrogram(mergings,
            labels=varieties3,
@@ -182,13 +187,13 @@ plt.show()
 sns.catplot(x='Престиж',
             y='Востребованность',
             kind='box',
-            data=LSTU_old)
+            data=LSTU_new)
 plt.show()
 
 sns.catplot(x='Престиж',
             y='Востребованность',
             kind='box',
-            data=LSTU_new)
+            data=LSTU_old)
 plt.show()
 
 sns.catplot(x='Престиж',
