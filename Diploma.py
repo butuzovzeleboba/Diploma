@@ -42,21 +42,21 @@ standart_VSU_data = pd.DataFrame(object3.fit_transform(VSU_data))
 # \\\\\\\\\\\\\\\\\\\\
 # 3)Матрица корреляции
 matrix_LSTU_old = LSTU_old.corr()
-sns.heatmap(matrix_LSTU_old, vmin=-0.5, vmax=1, annot=True, fmt='.2f', linewidths=2,
+sns.heatmap(matrix_LSTU_old, annot=True, fmt='.2f', linewidths=2,
 mask=~np.tri(matrix_LSTU_old.shape[1], k=-1, dtype=bool),
-linewidth =2, cbar=False)
+linewidth =2)
 plt.show()
 
 matrix_LSTU_new = LSTU_new.corr()
-sns.heatmap(matrix_LSTU_new, vmin=-0.5, vmax=1, annot=True, fmt='.2f', linewidths=2,
+sns.heatmap(matrix_LSTU_new,  annot=True, fmt='.2f', linewidths=2,
 mask=~np.tri(matrix_LSTU_new.shape[1], k=-1, dtype=bool),
-linewidth =2, cbar=False)
+linewidth =2)
 plt.show()
 
 matrix_VSU_data = VSU_data.corr()
-sns.heatmap(matrix_VSU_data, vmin=-0.5, vmax=1, annot=True, fmt='.2f', linewidths=2,
+sns.heatmap(matrix_VSU_data, annot=True, fmt='.2f', linewidths=2,
 mask=~np.tri(matrix_VSU_data.shape[1], k=-1, dtype=bool),
-linewidth =2, cbar=False)
+linewidth =2)
 plt.show()
 
 # 5)Метод локтя
@@ -103,13 +103,12 @@ print("Альфа Кронбаха ЛГТУ новые", alpha_LSTU_new)
 
 alpha_LSTU_old = pg.cronbach_alpha(data=standart_LSTU_old, ci=.95)
 print("Альфа Кронбаха ЛГТУ старые", alpha_LSTU_old)# Посмотреть точнее
-x = alpha_LSTU_old.split(",", 1)
 
 
 alpha_VSU = pg.cronbach_alpha(data=standart_VSU_data, ci=.95)
 print("Альфа Кронбаха ВГУ", alpha_VSU)
 
-#7) Критерий согласия Пирсона
+#7) Тест Шапиро-Вилка
 stat, p = scipy.stats.normaltest(LSTU_new['Престиж'])
 print('Statistics=%.3f, p-value=%.3f' % (stat, p))
 alpha = 0.044
@@ -149,34 +148,27 @@ print(res.summary())
 
 # \\\\\\\\\\\\\\\\\
 # 9)Кластеное дерево
-LSTU_new_copy = LSTU_new.copy()
-samples = LSTU_new_copy.values
-varieties1 = list(LSTU_new_copy.pop('Престиж'))
-mergings = linkage(samples, method='complete')
+Clusters_tree_new=LSTU_new.T
+mergings = linkage(Clusters_tree_new, method='complete')
 dendrogram(mergings,
-           labels=varieties1,
            leaf_rotation=90,
            leaf_font_size=6,
            )
 plt.show()
 
-LSTU_old_copy = LSTU_old.copy()
-samples = LSTU_old_copy.values
-varieties2 = list(LSTU_old_copy.pop('Престиж'))
-mergings = linkage(samples, method='complete')
+LSTU_old_copy=LSTU_old.copy()
+LSTU_old_copy=LSTU_old_copy.drop('Посещаемость', axis= 1 , inplace= False )
+Clusters_tree_old =LSTU_old_copy.T
+mergings = linkage(Clusters_tree_old, method='complete')
 dendrogram(mergings,
-           labels=varieties2,
            leaf_rotation=90,
            leaf_font_size=6,
            )
 plt.show()
 
-VSU_data_copy = VSU_data.copy()
-samples = VSU_data_copy.values
-varieties3 = list(VSU_data_copy.pop('Престиж'))
-mergings = linkage(samples, method='complete')
+Clusters_tree_VSU=VSU_data.T
+mergings = linkage(Clusters_tree_VSU, method='complete')
 dendrogram(mergings,
-           labels=varieties3,
            leaf_rotation=90,
            leaf_font_size=6,
            )
